@@ -1,6 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import { combineReducers, createStore } from "redux";
+import { Provider, connect } from 'react-redux';
 import "./index.css";
 import registerServiceWorker from "./registerServiceWorker";
 
@@ -100,28 +101,39 @@ function TodoItem({ todo, onToggleTodo }) {
 function TodoList({ todos, onToggleTodo }) {
   return (
     <div>
-      {todos.map(todo => <TodoItem
-        key={todo.id}
-        todo={todo}
-        onToggleTodo={onToggleTodo}
-      />)}
+      {todos.map(todo => <ConnectedTodoItem
+                            key={todo.id}
+                            todo={todo}
+                          />)}
     </div>
   );
 }
 
 function TodoApp({todos, onToggleTodo }) {
-  return <TodoList 
-            todos={todos}
-            onToggleTodo={onToggleTodo}
-         />;
+  return <ConnectedTodoList />;
 }
+
+function mapStateToProps(state) {
+  return {
+    todos: state.todoState,
+  };
+}
+
+function mapDispatchToProps(dispatch) {
+  return {
+     onToggleTodo: id => dispatch(doToggleTodo(id)),
+  };
+}
+
+const ConnectedTodoList = connect(mapStateToProps)(TodoList);
+const ConnectedTodoItem = connect(null, mapDispatchToProps)(TodoItem)
+const ConnectedTodoApp = connect(mapStateToProps, mapDispatchToProps)(TodoApp);
 
 function render() {
     ReactDOM.render(
-        <TodoApp 
-            todos={store.getState().todoState}
-            onToggleTodo={id => store.dispatch(doToggleTodo(id))}
-        />, 
+        <Provider store={store}>
+          <TodoApp />
+        </Provider>, 
         document.getElementById("root")
     );
 }
